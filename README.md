@@ -9,3 +9,7 @@ In the root of the repository, run the following:
     pip install -e .
 
 This will install the library in development mode
+
+To run the tests:
+
+    python -m unittest discover
