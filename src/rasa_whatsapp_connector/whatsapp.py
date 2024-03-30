@@ -119,6 +119,29 @@ class RasaToWhatsappConverter:
 
         return message
 
+    def prepare_message(
+        self,
+        to: str,
+        text: str,
+        buttons: List[Dict[str, Any]] | None = None,
+    ):
+        """
+        Prepares a message compatible with Whatsapp Cloud Api
+        Args:
+            to (str): Message recipient.
+            text (str): Message text.
+            buttons (list or none): Optional list of buttons 
+        """
+        if buttons is not None:
+            if len(buttons) <= 3:
+                message = self._prepare_button_message(to, text, buttons)
+            else:
+                message = self._prepare_list_message(to, text, buttons)
+        else:
+            message = self._prepare_text_message(to, text)
+
+        return message
+
     def send_message(
         self,
         to: str,
@@ -137,13 +160,7 @@ class RasaToWhatsappConverter:
         """
         headers = {'Authorization': f'Bearer {self._token}'}
 
-        if buttons is not None:
-            if len(buttons) <= 3:
-                message = self._prepare_button_message(to, text, buttons)
-            else:
-                message = self._prepare_list_message(to, text, buttons)
-        else:
-            message = self._prepare_text_message(to, text)
+        message = self.prepare_message(to, text, buttons)
 
         response = requests.post(
             url,
