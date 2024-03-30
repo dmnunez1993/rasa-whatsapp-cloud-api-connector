@@ -16,6 +16,7 @@ backend/static/
 *.vscode
 **/test/
 .env
+*.egg-info
 
 # Macos
 .DS_Store
