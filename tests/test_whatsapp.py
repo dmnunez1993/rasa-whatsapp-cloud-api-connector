@@ -1,6 +1,6 @@
 import unittest
 
-from mock import patch, ANY
+from mock import patch
 
 from rasa_whatsapp_connector.whatsapp import RasaToWhatsappConverter
 
