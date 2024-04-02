@@ -9,7 +9,6 @@ install_requires = [
 setup(
     name='rasa_whatsapp_connector',
     version='0.0.1',
-    package_dir={'': 'src'},
     install_requires=install_requires,
     packages=find_packages(),
 )
