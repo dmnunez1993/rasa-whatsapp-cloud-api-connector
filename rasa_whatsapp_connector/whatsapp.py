@@ -157,7 +157,7 @@ class RasaToWhatsappConverter:
         """
         url = f"""
             https://graph.facebook.com/{self._graphql_api_version}{self._phone_identifier}/messages
-        """
+        """.strip()
         headers = {'Authorization': f'Bearer {self._token}'}
 
         message = self.prepare_message(to, text, buttons)
