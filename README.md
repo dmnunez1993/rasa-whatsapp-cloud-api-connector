@@ -1,4 +1,4 @@
-# Rasa Whatsapp Connector
+# Rasa Whatsapp Connector (In Development)
 
 Python library that can be used to connect the rasa chatbot to Whatsapp Cloud Api
 
