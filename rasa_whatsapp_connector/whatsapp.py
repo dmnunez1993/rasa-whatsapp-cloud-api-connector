@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 
+from rasa.core.channels.channel import UserMessage
 import requests
 
 DEFAULT_WHATSAPP_API_TIMEOUT = 10
@@ -130,7 +131,7 @@ class RasaToWhatsappConverter:
         Args:
             to (str): Message recipient.
             text (str): Message text.
-            buttons (list or none): Optional list of buttons 
+            buttons (list or none): Optional list of buttons
         """
         if buttons is not None:
             if len(buttons) <= 3:
@@ -170,3 +171,57 @@ class RasaToWhatsappConverter:
         )
 
         return response.json()
+
+    def _get_value(self, data):
+        if "entry" not in data or len(data["entry"]) == 0:
+            raise ValueError("Provided data is invalid!")
+
+        entry = data["entry"]
+
+        if "changes" not in entry or len(entry["changes"]) == 0:
+            raise ValueError("Provided data is invalid!")
+
+        change = entry["changes"][0]
+
+        if "value" not in change:
+            raise ValueError("Provided data is invalid!")
+
+        return change["value"]
+
+    def get_message_from_whatsapp_hook(self, data):
+        """
+        Gets a rasa message from a whatsapp hook call
+        Args:
+            data(dict[str]): Whatsapp hook data.
+        Returns:
+            dict[str] or None: The message in the hook data or None.
+        Raises:
+            ValueError if the hook data is invalid
+        """
+        value = self._get_value(data)
+
+        if "messages" not in value:
+            return None
+
+        message = value["messages"][0]
+
+        sender_id = message["from"]
+        text = None
+
+        if message["type"] == "text":
+            text = message["text"]["body"]
+        elif (
+            message["type"] == "interactive"
+            and message['interactive']['type'] == 'button_reply'
+        ):
+            text = message['interactive']['button_reply']['id']
+        elif (
+            message["type"] == "interactive"
+            and message['interactive']['type'] == 'list_reply'
+        ):
+            text = message['interactive']['list_reply']['id']
+
+        if text is None:
+            raise ValueError("Provided data is invalid!")
+
+        return {"sender_id": sender_id, "text": text, "metadata": {}}
