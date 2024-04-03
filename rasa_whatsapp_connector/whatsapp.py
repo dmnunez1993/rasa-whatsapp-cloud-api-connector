@@ -1,6 +1,5 @@
 from typing import List, Dict, Any
 
-from rasa.core.channels.channel import UserMessage
 import requests
 
 DEFAULT_WHATSAPP_API_TIMEOUT = 10
