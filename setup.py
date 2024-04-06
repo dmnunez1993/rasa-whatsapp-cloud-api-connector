@@ -10,5 +10,8 @@ setup(
     name='rasa_whatsapp_connector',
     version='0.0.1',
     install_requires=install_requires,
+    extras_require={
+        'test': ['mock==5.1.0', ],
+    },
     packages=find_packages(),
 )

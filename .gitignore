@@ -17,6 +17,7 @@ backend/static/
 **/test/
 .env
 *.egg-info
+.eggs
 
 # Macos
 .DS_Store
