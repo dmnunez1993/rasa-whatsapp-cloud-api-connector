@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 import unittest
 
 from mock import patch
@@ -229,3 +231,254 @@ class TestWhatsappCloudApiConverter(unittest.TestCase):
             headers=expected_headers,
             timeout=self._timeout,
         )
+
+    def test_get_message_from_whatsapp_hook_invalid_value(self):
+        """
+        Tests invalid value received from a whatsapp hook call
+        """
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            {},
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            {"entry": []},
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            {"entry": [{}]},
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            {"entry": [{
+                "changes": []
+            }]},
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            {"entry": [{
+                "changes": [{}]
+            }]},
+        )
+
+    def _prepare_whatsapp_value(self, data: Dict[str, Any]):
+        return {"entry": [{"changes": [{"value": data}]}]}
+
+    def test_get_message_from_whatsapp_hook_invalid_message(self):
+        """
+        Tests invalid message received from a whatsapp hook call
+        """
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            self._prepare_whatsapp_value({}),
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            self._prepare_whatsapp_value({"messages": []}),
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            self._prepare_whatsapp_value({"messages": [{}]}),
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            self._prepare_whatsapp_value({"messages": [{
+                "from": "12345678"
+            }]}),
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            self._prepare_whatsapp_value({"messages": [{
+                "from": "12345678"
+            }]}),
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            self._prepare_whatsapp_value(
+                {"messages": [{
+                    "from": "12345678",
+                    "type": "text"
+                }]}
+            ),
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            self._prepare_whatsapp_value(
+                {"messages": [{
+                    "from": "12345678",
+                    "type": "interactive"
+                }]}
+            ),
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            self._prepare_whatsapp_value(
+                {
+                    "messages":
+                        [
+                            {
+                                "from": "12345678",
+                                "type": "interactive",
+                                "interactive": {
+                                    "type": "button_reply"
+                                }
+                            }
+                        ]
+                }
+            ),
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            self._prepare_whatsapp_value(
+                {
+                    "messages":
+                        [
+                            {
+                                "from": "12345678",
+                                "type": "interactive",
+                                "interactive":
+                                    {
+                                        "type": "button_reply",
+                                        "button_reply": {}
+                                    }
+                            }
+                        ]
+                }
+            ),
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            self._prepare_whatsapp_value(
+                {
+                    "messages":
+                        [
+                            {
+                                "from": "12345678",
+                                "type": "interactive",
+                                "interactive": {
+                                    "type": "list_reply"
+                                }
+                            }
+                        ]
+                }
+            ),
+        )
+
+        self.assertRaises(
+            ValueError,
+            self._converter.get_message_from_whatsapp_hook,
+            self._prepare_whatsapp_value(
+                {
+                    "messages":
+                        [
+                            {
+                                "from": "12345678",
+                                "type": "interactive",
+                                "interactive":
+                                    {
+                                        "type": "list_reply",
+                                        "list_reply": {}
+                                    }
+                            }
+                        ]
+                }
+            ),
+        )
+
+    def _prepare_whatsapp_message(self, data: Dict[str, Any]):
+        return self._prepare_whatsapp_value({"messages": [data]})
+
+    def test_get_message_from_whatsapp_hook_valid_message(self):
+        """
+        Tests valid received from a whatsapp hook call
+        """
+
+        text_message = self._prepare_whatsapp_message(
+            {
+                "from": "12345678",
+                "type": "text",
+                "text": {
+                    "body": "sample text message"
+                }
+            }
+        )
+
+        rasa_text_message = self._converter.get_message_from_whatsapp_hook(
+            text_message
+        )
+
+        self.assertEqual(rasa_text_message["sender_id"], "12345678")
+        self.assertEqual(rasa_text_message["text"], "sample text message")
+        self.assertDictEqual(rasa_text_message["metadata"], {})
+
+        button_message = self._prepare_whatsapp_message(
+            {
+                "from": "12345678",
+                "type": "interactive",
+                "interactive":
+                    {
+                        "type": "button_reply",
+                        "button_reply": {
+                            "id": "sample_button_id"
+                        }
+                    }
+            }
+        )
+
+        rasa_button_message = self._converter.get_message_from_whatsapp_hook(
+            button_message
+        )
+
+        self.assertEqual(rasa_button_message["sender_id"], "12345678")
+        self.assertEqual(rasa_button_message["text"], "sample_button_id")
+        self.assertDictEqual(rasa_button_message["metadata"], {})
+
+        list_message = self._prepare_whatsapp_message(
+            {
+                "from": "12345678",
+                "type": "interactive",
+                "interactive":
+                    {
+                        "type": "list_reply",
+                        "list_reply": {
+                            "id": "sample_list_id"
+                        }
+                    }
+            }
+        )
+
+        rasa_list_message = self._converter.get_message_from_whatsapp_hook(
+            list_message
+        )
+
+        self.assertEqual(rasa_list_message["sender_id"], "12345678")
+        self.assertEqual(rasa_list_message["text"], "sample_list_id")
+        self.assertDictEqual(rasa_list_message["metadata"], {})

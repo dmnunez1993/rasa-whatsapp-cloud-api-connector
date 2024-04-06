@@ -175,7 +175,7 @@ class RasaToWhatsappConverter:
         if "entry" not in data or len(data["entry"]) == 0:
             raise ValueError("Provided data is invalid!")
 
-        entry = data["entry"]
+        entry = data["entry"][0]
 
         if "changes" not in entry or len(entry["changes"]) == 0:
             raise ValueError("Provided data is invalid!")
@@ -199,26 +199,29 @@ class RasaToWhatsappConverter:
         """
         value = self._get_value(data)
 
-        if "messages" not in value:
-            return None
+        if "messages" not in value or len(value["messages"]) == 0:
+            raise ValueError("Provided value is invalid")
 
         message = value["messages"][0]
 
-        sender_id = message["from"]
-        text = None
+        try:
+            sender_id = message["from"]
+            text = None
 
-        if message["type"] == "text":
-            text = message["text"]["body"]
-        elif (
-            message["type"] == "interactive"
-            and message['interactive']['type'] == 'button_reply'
-        ):
-            text = message['interactive']['button_reply']['id']
-        elif (
-            message["type"] == "interactive"
-            and message['interactive']['type'] == 'list_reply'
-        ):
-            text = message['interactive']['list_reply']['id']
+            if message["type"] == "text":
+                text = message["text"]["body"]
+            elif (
+                message["type"] == "interactive"
+                and message['interactive']['type'] == 'button_reply'
+            ):
+                text = message['interactive']['button_reply']['id']
+            elif (
+                message["type"] == "interactive"
+                and message['interactive']['type'] == 'list_reply'
+            ):
+                text = message['interactive']['list_reply']['id']
+        except KeyError as exc:
+            raise ValueError("Provided data is invalid!") from exc
 
         if text is None:
             raise ValueError("Provided data is invalid!")
