@@ -6,7 +6,7 @@ Python library that can be used to connect the rasa chatbot to Whatsapp Cloud Ap
 
 In the root of the repository, run the following:
 
-    pip install -e .[test]
+    pip install -e ".[test]"
 
 This will install the library in development mode
 
